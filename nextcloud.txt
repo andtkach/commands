@@ -1,0 +1,140 @@
+https://www.learnlinux.tv/nextcloud-complete-setup-guide/
+
+
+Consider getting a domain
+The video shows the process of setting up a domain. This is optional, but recommended.
+
+Install Ubuntu Server
+To get started, install Ubuntu Server on a VPS, physical server, virtual machine, or whatever you have. You can support the channel by setting up a server on Linode with <URL HERE>(this link) but that’s optional, any Ubuntu Server installation should be fine.
+
+Adding a user
+After setting up Ubuntu Server, create a user for yourself if you don’t already have one:
+
+sudo adduser jdoe
+Adding a user to the sudo group
+sudo usermod -aG sudo jdoe
+Update packages
+sudo apt update
+sudo apt dist-upgrade
+Clean up orphan packages
+There may or may not be some orphaned packages. You can clean them up with the following command:
+
+ sudo apt autoremove
+Set the hostname
+sudo nano /etc/hostname
+sudo nano /etc/hosts
+Reboot to save all changes so far
+sudo reboot
+Install tmux (optional)
+This is an optional step, but running within tmux helps you avoid a situation where your SSH session disconnects in the middle of installing packages, which can cause package corruption.
+
+Install the tmux package:
+
+ sudo apt install tmux
+Activate tmux with:
+
+ tmux
+Download Nextcloud
+Go to: https://nextcloud.com/install/ Click “Download for server” and copy the link address.
+
+On the server, download the Nextcloud zip file:
+
+ wget https://download.nextcloud.com/server/releases/nextcloud-20.0.6.zip
+Note: Change the URL in the command above to whatever the current download URL is for Nextcloud, this changes from time to time. Just grab the URL from the Nextcloud site.
+
+Set up database server
+Install the mariadb-server package:
+
+ sudo apt install mariadb-server
+Secure the installation with:
+
+ sudo mysql_secure_installation
+Follow the prompts to set up some very basic security defaults for the database server.
+
+Create Nextcloud Database
+sudo mariadb
+CREATE DATABASE nextcloud;
+SHOW DATABASES;
+GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'localhost' IDENTIFIED BY 'mypassword';
+FLUSH PRIVILEGES;
+CTRL+D to exit
+
+Install required packages
+sudo apt install php php-apcu php-bcmath php-cli php-common php-curl php-gd php-gmp php-imagick php-intl php-mbstring php-mysql php-zip php-xml
+Make sure apache2 is listed as a package in the list to be installed
+
+Check status with systemctl
+systemctl status apache2
+systemctl status mariadb
+Enable recommended PHP extensions
+ sudo phpenmod bcmath gmp imagick intl
+Install zip and unzip nextcloud
+sudo apt install unzip
+unzip nextcloud-<version>.zip
+Organize Apache files
+mv nextcloud nc.learnlinux.tv
+sudo chown -R www-data:www-data nc.learnlinux.tv
+sudo mv nc.learnlinux.tv /var/www
+sudo a2dissite 000-default.conf
+sudo systemctl reload apache2
+Add Apache virtual host for Nextcloud
+sudo nano /etc/apache2/sites-available/nc.learnlinux.tv.conf
+ <VirtualHost *:80>
+     DocumentRoot "/var/www/nc.learnlinux.tv"
+     ServerName nc.learnlinux.tv
+
+     <Directory "/var/www/nc.learnlinux.tv/">
+         Options MultiViews FollowSymlinks
+         AllowOverride All
+         Order allow,deny
+         Allow from all
+    </Directory>
+
+    TransferLog /var/log/apache2/nc.learnlinux.tv_access.log
+    ErrorLog /var/log/apache2/nc.learnlinux.tv_error.log
+
+ </VirtualHost>
+Enable the site
+sudo a2ensite nc.learnlinux.tv.conf
+Configure PHP
+Ubuntu 20.04:
+
+ sudo nano /etc/php/7.4/apache2/php.ini
+Debian 10:
+
+ sudo nano /etc/php/7.3/apache2/php.ini
+Parameters to adjust:
+
+ memory_limit = 512M
+ upload_max_filesize = 200M
+ max_execution_time = 360
+ post_max_size = 200M
+ date.timezone = America/Detroit
+ opcache.enable=1
+ opcache.interned_strings_buffer=8
+ opcache.max_accelerated_files=10000
+ opcache.memory_consumption=128
+ opcache.save_comments=1
+ opcache.revalidate_freq=1
+Enable required Apache mods
+ sudo a2enmod dir env headers mime rewrite ssl
+ sudo systemctl restart apache2
+Configure Nextcloud
+Browse to the Nextcloud server in your browser, and update the configuration to match the database info you’ve used earlier.
+
+Enable memory caching
+Edit the Nextcloud config file:
+
+ sudo vim /var/www/nc.learnlinux.tv/config/config.php
+Add the following line to the end:
+
+ 'memcache.local' => '\OC\Memcache\APCu',
+Correct permissions of config.php
+sudo chmod 660 /var/www/nc.learnlinux.tv/config/config.php
+sudo chown root:www-data /var/www/nc.learnlinux.tv/config/config.php
+Fix database indexes
+ You may have to run the following to fix database indexes, if you see an error:
+ sudo php /var/www/nc.learnlinux.tv/occ db:add-missing-indices
+Create an SSL certificate
+ sudo add-apt-repository ppa:certbot/certbot
+ sudo certbot --apache -d nc.learnlinux.tv
