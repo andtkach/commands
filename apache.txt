@@ -1,0 +1,51 @@
+sudo apt update
+sudo apt install apache2
+
+sudo systemctl status apache2
+
+# create html directory
+sudo mkdir -p /var/www/test-server.devatk11.com
+
+# change permissions to read access
+sudo chmod -R 755 /var/www/test-server.devatk11.com
+
+# check permissions
+sudo ls -la /var/www/test-server.devatk11.com
+
+# create html code
+sudo nano /var/www/test-server.devatk11.com/index.html
+
+# change permissions to read access again for file
+sudo chmod -R 755 /var/www/test-server.devatk11.com
+
+# see sites available (ls here)
+cd /etc/apache2/sites-available/
+
+# copy default config for new site
+cp 000-default.conf ./test-server.devatk11.com.conf
+
+# edit config for new site
+sudo nano test-server.devatk11.com.conf
+
+	<VirtualHost *:82>
+
+ 		ServerAdmin webmaster@localhost
+        ServerName test-server.devatk11.com
+        ServerAlias www.test-server.devatk11.com
+        DocumentRoot /var/www/test-server.devatk11.com
+
+# enable new website
+sudo a2ensite test-server.devatk11.com.conf
+
+#disable defailt site
+sudo a2dissite 000-.....
+
+# restart apache
+sudo systemctl restart apache2
+
+# allow ports on hosting (82)
+
+# open post on local server
+sudo ufw status
+sudo ufw allow 82/tcp
+
