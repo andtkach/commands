@@ -1,0 +1,2 @@
+# View latest system messages
+tail -f /var/log/syslog
