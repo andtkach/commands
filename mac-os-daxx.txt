@@ -1,0 +1,51 @@
+RN
+
+npx react-native run-ios
+npx react-native run-ios --simulator='iPhone 11 with iOS 13.4'
+npx react-native run-ios --simulator='iPhone SE'
+xcrun simctl list devices           - List available devices
+
+
+npx react-native run-android
+npx react-native log-android
+
+
+
+
+JAVA
+echo $JAVA_HOME
+Java --version
+/usr/libexec/java_home          - See java home variable
+/usr/libexec/java_home -V       - See list of all installed java runtimes
+source ~/.zshenv 	 	- refresh env
+
+
+
+
+openjdk version "1.8.0_232"
+OpenJDK Runtime Environment (AdoptOpenJDK)(build 1.8.0_232-b09)
+OpenJDK 64-Bit Server VM (AdoptOpenJDK)(build 25.232-b09, mixed mode)
+
+
+
+Emulator
+~/Library/Android/sdk/emulator/emulator -gpu host -feature HVF -avd Pixel_4_API_29
+
+
+Docker
+
+Run MongoDB
+docker run -d  --name mongo-on-docker  -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=password mongo
+
+Local Mongo: mongodb://admin:password@localhost:27017
+
+
+KEYS:
+IOS emulator menu: command + control + z
+Android emulator meny: command + m
+Chrome dev tools: command + option + i
+
+Run on Android phone with debugger.
+1. Connect phone
+2. adb devices
+3. npx react-native run-android
